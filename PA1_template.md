@@ -5,12 +5,10 @@ output:
     keep_md: true
 ---
 
-```{r setoptions, echo=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE)
-options(scipen=999)
-```
 
-```{r}
+
+
+```r
 # Load the required packages
 library(knitr)
 library(lubridate)
@@ -22,7 +20,8 @@ library(stringi)
 
 ## Loading and preprocessing the data
 
-```{r}
+
+```r
 # Load the data and convert the date variable into date using lubridate
 activity <- read.csv(unz('activity.zip', 'activity.csv'))
 activity <- as_tibble(activity)
@@ -34,7 +33,8 @@ activity$interval[startsWith(activity$interval, ':')] <- paste0('0', activity$in
 ```
 ## What is mean total number of steps taken per day?
 
-```{r}
+
+```r
 # Aggregate and sum the steps by date
 steps_per_day <- aggregate(activity$steps, by = list(activity$date), FUN = sum)
 # Calculate the mean and median steps per day omitting the NA's
@@ -44,12 +44,15 @@ median_steps <- median(steps_per_day$x, na.rm = TRUE)
 ggplot(steps_per_day, aes(x)) + geom_histogram(bins = 5, na.rm = TRUE) + labs(x = 'Steps each day', y = 'Frequency', title = 'Histogram of total number of steps each day')
 ```
 
-The mean steps per day is `r mean_steps` and the median steps per day is `r median_steps`.
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
+The mean steps per day is 10766.1886792 and the median steps per day is 10765.
 
 
 ## What is the average daily activity pattern?
 
-```{r}
+
+```r
 # Aggregate and calculate the mean of steps by interval, omitting NA's
 mean_steps_per_interval <- aggregate(activity$steps, list(activity$interval), mean, na.rm = TRUE)
 # Find the interval that contains the maximum number of steps and that value
@@ -59,12 +62,15 @@ max_steps <- max(mean_steps_per_interval$x)
 ggplot(mean_steps_per_interval, aes(hm(Group.1), x)) + geom_line() + scale_x_time() + labs(title = 'Average steps per interval', x = 'Time', y = 'Steps')
 ```
 
-On average, the 5-minute interval which contains the maximum number of steps is `r max_step_interval` with `r max_steps` steps.
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+On average, the 5-minute interval which contains the maximum number of steps is 8:35 with 206.1698113 steps.
 
 
 ## Imputing missing values
 
-```{r}
+
+```r
 # Calculate the total number of missing values in the dataset
 total_na <- sum(!complete.cases(activity))
 # Fill in the missing values using the mean for each 5-minute interval and create a new dataset with this data
@@ -78,15 +84,18 @@ median_steps_filled <- median(steps_per_day_filled$x)
 ggplot(steps_per_day_filled, aes(x)) + geom_histogram(bins = 5) + labs(x = 'Steps per day', y = 'Frequency', title = 'Histogram of total number of steps per day without NAs')
 ```
 
-The total number of missing values is `r total_na`. The method used for filling in all of the missing values is fill the mean for that 5-minute interval.
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
-The mean steps per day without NAs is `r mean_steps_filled` and the median steps per day without NAs is `r median_steps_filled`.
+The total number of missing values is 2304. The method used for filling in all of the missing values is fill the mean for that 5-minute interval.
+
+The mean steps per day without NAs is 10766.1886792 and the median steps per day without NAs is 10766.1886792.
 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-```{r}
+
+```r
 # Create a new factor variable to the activity_filled dataset, with the levels 'weekday' and 'weekend'
 activity_filled <- mutate(activity_filled, week = factor(ifelse(weekdays(activity_filled$date) %in% c('sábado', 'domingo'), 'weekend', 'weekday')))
 # Aggregate and calculate the mean of steps by interval and week 
@@ -94,5 +103,7 @@ agg_week <- aggregate(steps~interval+week, activity_filled, mean)
 # Plot a panel time-series of average steps across weekdays or weekend days vs interval
 ggplot(agg_week, aes(hm(interval), steps)) + geom_line() + scale_x_time() + facet_grid(rows = vars(week)) + labs(title = 'Average steps per interval', x = 'Time', y = 'Steps')
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
 
 
